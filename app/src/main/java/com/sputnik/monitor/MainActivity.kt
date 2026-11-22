@@ -122,6 +122,9 @@ class MainActivity : Activity() {
             try { docFile(path).writeText(text, Charsets.UTF_8) } catch (e: Exception) { }
         }
 
+        @JavascriptInterface fun readAsset(name: String): String? =
+            try { assets.open(name).bufferedReader(Charsets.UTF_8).use { it.readText() } } catch (e: Exception) { null }
+
         @JavascriptInterface fun showUi(html: String) {
             main.post { ui.loadDataWithBaseURL("https://sputnik.local/", html, "text/html", "UTF-8", null) }
         }

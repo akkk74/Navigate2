@@ -18,6 +18,11 @@ stub = ('async function performShareApp() {\n'
 script, n = re.subn(r"async function performShareApp\(\) \{.*?\n\}\n", lambda m: stub, script, count=1, flags=re.S)
 assert n == 1, "performShareApp не найден"
 
+# 2) Tailwind CDN (рантайм-компилятор) сильно тормозит Android — берём заранее собранный tailwind.css
+needle = 'cachedAsset("https://cdn.tailwindcss.com", "sputnik_cache_tailwind.js")'
+assert needle in script
+script = script.replace(needle, "Promise.resolve(null)")
+
 shims = (root / "tools" / "shims.js").read_text(encoding="utf-8")
 out = shims + "\n(async () => {\n" + script + "\n})().catch(e => Android.fatal(String((e && e.stack) || e)));\n"
 dst = root / "app/src/main/assets/engine.js"

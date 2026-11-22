@@ -59,6 +59,13 @@ class WebView {
     // В Android отправляем команды через мост, а не через смену location.href
     html = html.replace("window.location.href = nextUrl;",
       "(window.AndroidBridge ? AndroidBridge.send(nextUrl) : (window.location.href = nextUrl));");
+    // Заранее собранный Tailwind вместо CDN-компилятора (он тормозит на Android)
+    const css = Android.readAsset("tailwind.css");
+    if (css && css.length > 2000) {
+      html = html.replace('<script src="https://cdn.tailwindcss.com"></script>', () => "<style>" + css + "</style>");
+    }
+    // backdrop-filter (стекло) очень тяжёлый для Android WebView
+    html = html.replace(/(-webkit-)?backdrop-filter\s*:[^;}]*;?/g, "");
     Android.showUi(html);
     return Promise.resolve();
   }
@@ -6524,7 +6531,7 @@ async function cachedAsset(url, name) {
 
 async function loadAssets() {
   const [tailwind, leafletCss, leafletJs] = await Promise.all([
-    cachedAsset("https://cdn.tailwindcss.com", "sputnik_cache_tailwind.js"),
+    Promise.resolve(null),
     cachedAsset("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", "sputnik_cache_leaflet.css"),
     cachedAsset("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js", "sputnik_cache_leaflet.js")
   ]);

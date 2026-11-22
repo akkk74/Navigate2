@@ -23,6 +23,16 @@ jobs:
         with:
           gradle-version: 8.7
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Tailwind CSS (вместо CDN-компилятора)
+        run: |
+          npx --yes tailwindcss@3.4.17 -i tools/tw.css -o app/src/main/assets/tailwind.css \
+            --content "app/src/main/assets/engine.js" --minify || echo "Tailwind build failed, fallback to CDN"
+          ls -l app/src/main/assets/
+
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
 
